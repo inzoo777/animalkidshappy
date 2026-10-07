@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Safari Quest: Ultimate Kids Animal Quiz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for celebrations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700&display=swap');
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #a8e6cf 0%, #dbede6 50%, #ffd3b6 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-game {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+        }
+
+        .btn-bounce {
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
+        }
+
+        .btn-bounce:active {
+            transform: scale(0.95);
+        }
+
+        .pulse-slow {
+            animation: pulse 2.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: pop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Custom Scrollbar for list modes */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4ade80;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-3 md:p-6 min-h-screen">
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-md mx-auto relative overflow-hidden rounded-3xl glass-card p-5 sm:p-7 min-h-[620px] flex flex-col justify-between">
+        
+        <!-- TOP HEADER CONTROL BAR -->
+        <header id="topBar" class="flex justify-between items-center w-full mb-3 z-10">
+            <div class="flex items-center space-x-2">
+                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full flex items-center shadow-sm border border-amber-200">
+                    <i class="fa-solid fa-trophy text-amber-500 mr-1.5">parsing</i> 
+                    High Score: <span id="highScoreText" class="ml-1 font-black">0</span>
+                </span>
+            </div>
+            <div class="flex space-x-2">
+                <button id="timerToggleBtn" onclick="toggleTimerSetting()" class="w-9 h-9 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center shadow-sm hover:bg-emerald-200 transition btn-bounce" title="Toggle Timer">
+                    <i id="timerIcon" class="fa-solid fa-stopwatch"></i>
+                </button>
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="w-9 h-9 bg-sky-100 text-sky-700 rounded-full flex items-center justify-center shadow-sm hover:bg-sky-200 transition btn-bounce" title="Toggle Sound">
+                    <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: HOME / START SCREEN -->
+        <section id="homeScreen" class="flex flex-col items-center justify-center flex-1 text-center py-4 animate-pop">
+            <div class="relative my-4">
+                <div class="w-32 h-32 sm:w-36 sm:h-36 bg-emerald-400 rounded-full flex items-center justify-center text-6xl shadow-inner border-4 border-white pulse-slow">
+                    🦁
+                </div>
+                <span class="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xl p-2 rounded-full shadow-md animate-bounce">
+                    🦒
+                </span>
+                <span class="absolute -bottom-2 -left-2 bg-blue-400 text-white text-xl p-2 rounded-full shadow-md">
+                    🐬
+                </span>
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl font-game text-emerald-800 mb-2 leading-tight tracking-wide">
+                ANIMAL QUIZ
+                <span class="block text-xl text-amber-600 font-sans font-extrabold mt-1">FOR KIDS! 🐾</span>
+            </h1>
+
+            <p class="text-gray-600 text-sm font-semibold mb-6 px-4">
+                Explore 50 fun animal questions! Test your wild knowledge and collect 3 stars! ⭐
+            </p>
+
+            <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-game text-xl py-4 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 btn-bounce mb-3 flex items-center justify-center space-x-3">
+                <i class="fa-solid fa-play"></i>
+                <span>START GAME</span>
+            </button>
+
+            <div class="w-full text-center mt-2">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">50 Fun Questions • Audio FX • Timer Option</span>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: QUIZ INTERFACE -->
+        <section id="quizScreen" class="hidden flex-col flex-1 justify-between py-1">
+            <!-- Progress & Stats Header -->
+            <div class="w-full mb-3">
+                <div class="flex justify-between items-center text-xs font-bold text-gray-600 mb-1.5 px-1">
+                    <span class="flex items-center text-emerald-700 font-extrabold">
+                        <i class="fa-solid fa-paw mr-1"></i> Question <span id="currentQNum">1</span> / <span id="totalQNum">50</span>
+                    </span>
+                    <span id="scoreBadge" class="bg-amber-400 text-amber-950 px-2.5 py-0.5 rounded-full font-black text-xs shadow-sm">
+                        ⭐ Score: <span id="currentScore">0</span>
+                    </span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-200 h-3.5 rounded-full overflow-hidden p-0.5 border border-gray-300">
+                    <div id="progressBar" class="bg-gradient-to-r from-emerald-400 to-teal-500 h-full rounded-full transition-all duration-300" style="width: 2%"></div>
+                </div>
+            </div>
+
+            <!-- Timer Indicator (Conditional) -->
+            <div id="timerContainer" class="w-full bg-amber-50 border border-amber-200 rounded-xl p-2 mb-3 flex items-center justify-between">
+                <span class="text-xs font-bold text-amber-800 flex items-center">
+                    <i class="fa-solid fa-clock text-amber-600 mr-1.5"></i> Time Left:
+                </span>
+                <span id="timeLeftText" class="font-game text-lg text-amber-700">15s</span>
+            </div>
+
+            <!-- Question Box -->
+            <div class="w-full bg-white/90 rounded-2xl p-4 sm:p-5 shadow-md border-2 border-emerald-100 my-auto text-center relative overflow-hidden animate-pop">
+                <div id="animalEmojiBox" class="text-5xl sm:text-6xl mb-2 transition-transform duration-200 hover:scale-110 inline-block">
+                    🐶
+                </div>
+                <h2 id="questionText" class="text-lg sm:text-xl font-bold text-gray-800 leading-snug min-h-[50px] flex items-center justify-center">
+                    Which animal makes the sound "Woof Woof"?
+                </h2>
+            </div>
+
+            <!-- Options Grid -->
+            <div id="optionsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4 w-full">
+                <!-- Javascript will inject 4 option buttons here -->
+            </div>
+
+            <!-- Feedback Bar Footer -->
+            <div id="feedbackBox" class="h-10 mt-3 flex items-center justify-center font-bold text-sm rounded-xl transition-all opacity-0">
+                <span id="feedbackText">Great job! 🌟</span>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: GAME OVER / RESULTS -->
+        <section id="resultScreen" class="hidden flex-col items-center justify-center flex-1 text-center py-4 animate-pop">
+            <h2 id="resultTitle" class="text-3xl font-game text-emerald-800 mb-1">SAFARI MASTER!</h2>
+            <p id="resultSub" class="text-sm font-semibold text-gray-600 mb-3">You completed the quiz!</p>
+
+            <!-- Star Rating Display -->
+            <div id="starsBox" class="flex space-x-2 text-4xl my-3 text-yellow-400 drop-shadow">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+            </div>
+
+            <!-- Final Score Display Box -->
+            <div class="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 my-3 text-center">
+                <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest">Final Score</p>
+                <p class="text-4xl font-game text-emerald-700 my-1"><span id="finalScore">0</span> / 50</p>
+                <p class="text-xs font-bold text-gray-500">Accuracy: <span id="finalPercent">0%</span></p>
+            </div>
+
+            <!-- Encouragement Badge -->
+            <div id="badgeBox" class="bg-amber-100 text-amber-800 font-bold text-xs px-4 py-2 rounded-full mb-6 border border-amber-300">
+                🏅 Wild Explorer Badge Earned!
+            </div>
+
+            <!-- Restart & Share Buttons -->
+            <div class="w-full space-y-2.5">
+                <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-game text-lg py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 btn-bounce flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>PLAY AGAIN</span>
+                </button>
+                
+                <button onclick="goHome()" class="w-full bg-gray-100 text-gray-700 font-bold text-sm py-2.5 px-4 rounded-xl border border-gray-300 hover:bg-gray-200 transition btn-bounce">
+                    <i class="fa-solid fa-house mr-1"></i> Main Menu
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JAVASCRIPT GAME LOGIC -->
+    <script>
+        const quizData = [
+            { question: "Which animal is known as the 'King of the Jungle'?", emoji: "🦁", options: ["Tiger", "Lion", "Elephant", "Monkey"], answer: 1 },
+            { question: "What animal says 'Quack Quack'?", emoji: "🦆", options: ["Chicken", "Duck", "Frog", "Cat"], answer: 1 },
+            { question: "Which animal has a very long neck to reach tall trees?", emoji: "🦒", options: ["Giraffe", "Zebra", "Hippo", "Kangaroo"], answer: 0 },
+            { question: "Which animal produces delicious sweet honey?", emoji: "🐝", options: ["Ant", "Butterfly", "Honeybee", "Ladybug"], answer: 2 },
+            { question: "What sound does a dog make?", emoji: "🐶", options: ["Meow", "Woof Woof", "Moo", "Oink"], answer: 1 },
+            { question: "Which sea animal has eight long arms?", emoji: "🐙", options: ["Dolphin", "Shark", "Octopus", "Whale"], answer: 2 },
+            { question: "Which cute animal loves to eat bamboo leaves?", emoji: "🐼", options: ["Panda Bear", "Koala", "Sloth", "Rabbit"], answer: 0 },
+            { question: "What animal hops around carrying its baby in a pouch?", emoji: "🦘", options: ["Kangaroo", "Monkey", "Squirrel", "Bear"], answer: 0 },
+            { question: "Which animal has black and white stripes all over its body?", emoji: "🦓", options: ["Horse", "Zebra", "Tiger", "Dalmatian"], answer: 1 },
+            { question: "What sound does a cow make?", emoji: "🐮", options: ["Baa", "Moo", "Neigh", "Ribbit"], answer: 1 },
+            
+            { question: "Which animal is the largest living creature in the ocean?", emoji: "🐋", options: ["Great White Shark", "Blue Whale", "Giant Squid", "Walrus"], answer: 1 },
+            { question: "Which bird cannot fly but is an amazing swimmer in ice?", emoji: "🐧", options: ["Penguin", "Parrot", "Eagle", "Owl"], answer: 0 },
+            { question: "What animal changes its skin color to blend into trees?", emoji: "🦎", options: ["Frog", "Chameleon", "Snake", "Crocodile"], answer: 1 },
+            { question: "What do rabbits love to crunch on as a tasty snack?", emoji: "🐰", options: ["Fish", "Carrots", "Cheese", "Bones"], answer: 1 },
+            { question: "Which bird sleeps upside down and flies mostly at night?", emoji: "🦇", options: ["Owl", "Bat", "Raven", "Flamingo"], answer: 1 },
+            { question: "What sound does a sheep make?", emoji: "🐑", options: ["Cluck", "Baa Baa", "Oink", "Meow"], answer: 1 },
+            { question: "Which animal carries its entire house on its back?", emoji: "🐌", options: ["Snail", "Frog", "Crab", "Caterpillar"], answer: 0 },
+            { question: "Which animal is super slow and spends almost all day sleeping?", emoji: "🦥", options: ["Cheetah", "Sloth", "Fox", "Squirrel"], answer: 1 },
+            { question: "What animal is the fastest land animal on Earth?", emoji: "🐆", options: ["Lion", "Cheetah", "Horse", "Greyhound"], answer: 1 },
+            { question: "Which pink bird often stands gracefully on just one leg?", emoji: "🦩", options: ["Flamingo", "Swan", "Stork", "Pelican"], answer: 0 },
+
+            { question: "Which animal lives in ponds and goes 'Ribbit Ribbit'?", emoji: "🐸", options: ["Duck", "Frog", "Fish", "Turtle"], answer: 1 },
+            { question: "What animal is famous for loving bananas?", emoji: "🐒", options: ["Monkey", "Dog", "Cat", "Panda"], answer: 0 },
+            { question: "Which animal gives us fresh milk on the farm?", emoji: "🐄", options: ["Horse", "Cow", "Pig", "Goat"], answer: 1 },
+            { question: "Which slow animal wears a tough hard shell on its back?", emoji: "🐢", options: ["Turtle", "Lizard", "Frog", "Fish"], answer: 0 },
+            { question: "What sound does a rooster make in the morning?", emoji: "🐓", options: ["Cock-a-doodle-doo", "Woof", "Meow", "Quack"], answer: 0 },
+            { question: "Which animal has a big horn right on top of its nose?", emoji: "🦏", options: ["Rhinoceros", "Elephant", "Hippo", "Buffalo"], answer: 0 },
+            { question: "Which ocean animal is famous for its friendly playful jumps?", emoji: "🐬", options: ["Dolphin", "Shark", "Crab", "Jellyfish"], answer: 0 },
+            { question: "What animal gives us soft fluffy wool to make warm sweaters?", emoji: "🐑", options: ["Sheep", "Cow", "Horse", "Pig"], answer: 0 },
+            { question: "Which insect turns into a colorful flying butterfly?", emoji: "🐛", options: ["Caterpillar", "Worm", "Ant", "Bee"], answer: 0 },
+            { question: "What animal uses a big trunk to spray water and eat food?", emoji: "🐘", options: ["Elephant", "Giraffe", "Hippo", "Rhino"], answer: 0 },
+
+            { question: "Which clever bird can copy and repeat human words?", emoji: "🦜", options: ["Parrot", "Eagle", "Pigeon", "Penguin"], answer: 0 },
+            { question: "Which animal lives in cold ice and is a big white swimmer?", emoji: "🐻‍❄️", options: ["Polar Bear", "Grizzly Bear", "Panda", "Wolf"], answer: 0 },
+            { question: "What sound does a cat make when asking for milk?", emoji: "🐱", options: ["Meow", "Bark", "Oink", "Ribbit"], answer: 0 },
+            { question: "Which animal is small, loves cheese, and has a thin tail?", emoji: "🐭", options: ["Mouse", "Rabbit", "Squirrel", "Hamster"], answer: 0 },
+            { question: "What animal loves splashing in cool mud on hot days?", emoji: "🐖", options: ["Pig", "Horse", "Dog", "Cat"], answer: 0 },
+            { question: "Which bird is famous for turning its head almost all the way around?", emoji: "🦉", options: ["Owl", "Hawk", "Eagle", "Falcon"], answer: 0 },
+            { question: "What sea creature has sharp teeth and a fin on its back?", emoji: "🦈", options: ["Shark", "Goldfish", "Dolphin", "Seahorse"], answer: 0 },
+            { question: "Which animal gathers acorns and buries them in the ground?", emoji: "🐿️", options: ["Squirrel", "Mouse", "Rabbit", "Racoon"], answer: 0 },
+            { question: "Which animal gallops super fast and wears metal shoes?", emoji: "🐴", options: ["Horse", "Donkey", "Cow", "Camel"], answer: 0 },
+            { question: "Which animal has zero legs and slithers smoothly on the ground?", emoji: "🐍", options: ["Snake", "Lizard", "Worm", "Eel"], answer: 0 },
+
+            { question: "Where do fish live and breathe?", emoji: "🐠", options: ["In Water", "In Trees", "Under Rocks", "In the Sky"], answer: 0 },
+            { question: "Which desert animal has humps on its back to store energy?", emoji: "🐪", options: ["Camel", "Llama", "Horse", "Elephant"], answer: 0 },
+            { question: "Which bird is famous for its huge beautiful tail feathers?", emoji: "🦚", options: ["Peacock", "Parrot", "Swan", "Flamingo"], answer: 0 },
+            { question: "What do baby chickens hatch out of?", emoji: "🐣", options: ["Eggs", "Boxes", "Nests", "Leaves"], answer: 0 },
+            { question: "Which ocean animal looks like a twinkling star?", emoji: "⭐", options: ["Starfish", "Jellyfish", "Crab", "Clam"], answer: 0 },
+            { question: "What animal builds wooden dams across forest rivers?", emoji: "🦫", options: ["Beaver", "Otter", "Duck", "Frog"], answer: 0 },
+            { question: "Which cute animal carries a tiny acorn everywhere?", emoji: "🐿️", options: ["Chipmunk", "Cat", "Dog", "Fox"], answer: 0 },
+            { question: "Which farm animal loves eating grass and saying 'Baa'?", emoji: "🐐", options: ["Goat", "Pig", "Chicken", "Cat"], answer: 0 },
+            { question: "Which large animal loves sleeping in caves during winter?", emoji: "🐻", options: ["Bear", "Wolf", "Deer", "Fox"], answer: 0 },
+            { question: "Who is ready to become an official Animal Kingdom Expert?", emoji: "🌟", options: ["ME!", "Definitely ME!", "Super Ready!", "All of the above!"], answer: 3 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userSelectedOption = null;
+        let isAudioMuted = false;
+        let timerEnabled = true;
+        let timerInterval = null;
+        let timeLeft = 15;
+        const TIME_PER_QUESTION = 15;
+
+        // Audio Effects Synthesizer (Web Audio API - No external files required)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (isAudioMuted) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3); // A5
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+                    osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.3); // A2
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'click') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'win') {
+                    // Win Chime
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        noteOsc.frequency.value = freq;
+                        noteGain.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.1);
+                        noteGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.3);
+                        noteOsc.start(audioCtx.currentTime + idx * 0.1);
+                        noteOsc.stop(audioCtx.currentTime + idx * 0.1 + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio play suppressed");
+            }
+        }
+
+        function initHighScore() {
+            const savedHighScore = localStorage.getItem('animalQuizHighScore') || 0;
+            document.getElementById('highScoreText').innerText = savedHighScore;
+        }
+
+        function updateHighScore() {
+            const savedHighScore = parseInt(localStorage.getItem('animalQuizHighScore') || '0', 10);
+            if (score > savedHighScore) {
+                localStorage.setItem('animalQuizHighScore', score);
+                document.getElementById('highScoreText').innerText = score;
+            }
+        }
+
+        function toggleAudio() {
+            isAudioMuted = !isAudioMuted;
+            const soundIcon = document.getElementById('soundIcon');
+            const soundBtn = document.getElementById('soundToggleBtn');
+            if (isAudioMuted) {
+                soundIcon.className = "fa-solid fa-volume-xmark";
+                soundBtn.classList.replace('bg-sky-100', 'bg-gray-200');
+                soundBtn.classList.replace('text-sky-700', 'text-gray-500');
+            } else {
+                soundIcon.className = "fa-solid fa-volume-high";
+                soundBtn.classList.replace('bg-gray-200', 'bg-sky-100');
+                soundBtn.classList.replace('text-gray-500', 'text-sky-700');
+                playSound('click');
+            }
+        }
+
+        function toggleTimerSetting() {
+            timerEnabled = !timerEnabled;
+            const timerIcon = document.getElementById('timerIcon');
+            const timerBtn = document.getElementById('timerToggleBtn');
+            const timerContainer = document.getElementById('timerContainer');
+            
+            if (!timerEnabled) {
+                timerIcon.className = "fa-solid fa-stopwatch-20 text-gray-400";
+                timerBtn.classList.replace('bg-emerald-100', 'bg-gray-200');
+                timerBtn.classList.replace('text-emerald-700', 'text-gray-500');
+                timerContainer.classList.add('hidden');
+                clearInterval(timerInterval);
+            } else {
+                timerIcon.className = "fa-solid fa-stopwatch";
+                timerBtn.classList.replace('bg-gray-200', 'bg-emerald-100');
+                timerBtn.classList.replace('text-gray-500', 'text-emerald-700');
+                timerContainer.classList.remove('hidden');
+            }
+            playSound('click');
+        }
+
+        function startGame() {
+            playSound('click');
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('currentScore').innerText = score;
+            
+            document.getElementById('homeScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            document.getElementById('quizScreen').classList.add('flex');
+
+            loadQuestion();
+        }
+
+        function goHome() {
+            playSound('click');
+            clearInterval(timerInterval);
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('homeScreen').classList.remove('hidden');
+            document.getElementById('homeScreen').classList.add('flex');
+            initHighScore();
+        }
+
+        function loadQuestion() {
+            userSelectedOption = null;
+            const qData = quizData[currentQuestionIndex];
+
+            // Reset Feedback Box
+            const feedbackBox = document.getElementById('feedbackBox');
+            feedbackBox.className = "h-10 mt-3 flex items-center justify-center font-bold text-sm rounded-xl transition-all opacity-0";
+
+            // Update Progress Header
+            document.getElementById('currentQNum').innerText = currentQuestionIndex + 1;
+            document.getElementById('totalQNum').innerText = quizData.length;
+            const progressPercent = ((currentQuestionIndex + 1) / quizData.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+            // Update Question Box
+            document.getElementById('animalEmojiBox').innerText = qData.emoji;
+            document.getElementById('questionText').innerText = qData.question;
+
+            // Render 4 Options Buttons
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            qData.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full bg-white hover:bg-emerald-50 text-gray-800 font-bold py-3.5 px-4 rounded-xl border-2 border-gray-200 hover:border-emerald-300 shadow-sm transition-all btn-bounce text-left flex items-center justify-between text-sm sm:text-base";
+                btn.onclick = () => selectOption(index);
+                
+                btn.innerHTML = `
+                    <span class="flex items-center">
+                        <span class="w-7 h-7 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mr-2.5 font-game text-xs">
+                            ${String.fromCharCode(65 + index)}
+                        </span>
+                        ${optText}
+                    </span>
+                    <i class="fa-regular fa-circle text-gray-300 opt-icon"></i>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Start Timer if enabled
+            if (timerEnabled) {
+                resetAndStartTimer();
+            }
+        }
+
+        function resetAndStartTimer() {
+            clearInterval(timerInterval);
+            timeLeft = TIME_PER_QUESTION;
+            document.getElementById('timeLeftText').innerText = `${timeLeft}s`;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeLeftText').innerText = `${timeLeft}s`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function handleTimeOut() {
+            playSound('wrong');
+            const qData = quizData[currentQuestionIndex];
+            const optionsContainer = document.getElementById('optionsContainer');
+            const buttons = optionsContainer.querySelectorAll('button');
+
+            // Disable all buttons
+            buttons.forEach(btn => btn.disabled = true);
+
+            // Highlight correct option
+            buttons[qData.answer].classList.replace('border-gray-200', 'border-emerald-500');
+            buttons[qData.answer].classList.add('bg-emerald-100', 'text-emerald-900');
+
+            // Feedback Message
+            const feedbackBox = document.getElementById('feedbackBox');
+            feedbackBox.innerText = "⏰ Time's Up! Moving to next...";
+            feedbackBox.className = "h-10 mt-3 flex items-center justify-center font-bold text-sm rounded-xl transition-all opacity-100 bg-amber-100 text-amber-800 border border-amber-300";
+
+            setTimeout(() => {
+                nextQuestion();
+            }, 1500);
+        }
+
+        function selectOption(index) {
+            if (userSelectedOption !== null) return; // Prevent double clicking
+            userSelectedOption = index;
+            clearInterval(timerInterval);
+
+            const qData = quizData[currentQuestionIndex];
+            const optionsContainer = document.getElementById('optionsContainer');
+            const buttons = optionsContainer.querySelectorAll('button');
+            const feedbackBox = document.getElementById('feedbackBox');
+
+            // Disable all option buttons
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (index === qData.answer) {
+                // Correct Answer
+                score++;
+                document.getElementById('currentScore').innerText = score;
+                playSound('correct');
+
+                buttons[index].classList.replace('border-gray-200', 'border-emerald-500');
+                buttons[index].classList.add('bg-emerald-500', 'text-white', 'shadow-md');
+                buttons[index].querySelector('.opt-icon').className = "fa-solid fa-circle-check text-white";
+
+                feedbackBox.innerText = "🎉 Excellent! Correct Answer!";
+                feedbackBox.className = "h-10 mt-3 flex items-center justify-center font-bold text-sm rounded-xl transition-all opacity-100 bg-emerald-100 text-emerald-800 border border-emerald-300";
+            } else {
+                // Wrong Answer
+                playSound('wrong');
+
+                buttons[index].classList.replace('border-gray-200', 'border-rose-500');
+                buttons[index].classList.add('bg-rose-500', 'text-white', 'animate-shake');
+                buttons[index].querySelector('.opt-icon').className = "fa-solid fa-circle-xmark text-white";
+
+                // Highlight correct one as helper
+                buttons[qData.answer].classList.replace('border-gray-200', 'border-emerald-500');
+                buttons[qData.answer].classList.add('bg-emerald-100', 'text-emerald-900');
+
+                feedbackBox.innerText = "💡 Oops! Good try!";
+                feedbackBox.className = "h-10 mt-3 flex items-center justify-center font-bold text-sm rounded-xl transition-all opacity-100 bg-rose-100 text-rose-800 border border-rose-300";
+            }
+
+            setTimeout(() => {
+                nextQuestion();
+            }, 1400);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            clearInterval(timerInterval);
+            updateHighScore();
+            playSound('win');
+
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            document.getElementById('resultScreen').classList.add('flex');
+
+            const totalQ = quizData.length;
+            const percentage = Math.round((score / totalQ) * 100);
+
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('finalPercent').innerText = `${percentage}%`;
+
+            // Calculate Stars & Badges
+            const starsBox = document.getElementById('starsBox');
+            const resultTitle = document.getElementById('resultTitle');
+            const badgeBox = document.getElementById('badgeBox');
+
+            if (percentage >= 80) {
+                starsBox.innerHTML = `
+                    <i class="fa-solid fa-star animate-bounce" style="animation-delay:0.1s"></i>
+                    <i class="fa-solid fa-star animate-bounce" style="animation-delay:0.2s"></i>
+                    <i class="fa-solid fa-star animate-bounce" style="animation-delay:0.3s"></i>
+                `;
+                resultTitle.innerText = "SUPER SAFARI HERO! 🦁";
+                badgeBox.innerText = "🏆 Master Zoologist Badge Earned!";
+                triggerConfetti();
+            } else if (percentage >= 50) {
+                starsBox.innerHTML = `
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-regular fa-star text-yellow-200"></i>
+                `;
+                resultTitle.innerText = "GREAT JOB! 🦒";
+                badgeBox.innerText = "🥉 Animal Ranger Badge Earned!";
+            } else {
+                starsBox.innerHTML = `
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-regular fa-star text-yellow-200"></i>
+                    <i class="fa-regular fa-star text-yellow-200"></i>
+                `;
+                resultTitle.innerText = "KEEP EXPLORING! 🐾";
+                badgeBox.innerText = "🌱 Rookie Explorer Badge Earned!";
+            }
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initHighScore();
+        };
+    </script>
+</body>
+</html>
